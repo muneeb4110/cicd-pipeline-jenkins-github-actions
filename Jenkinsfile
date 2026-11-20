@@ -36,6 +36,18 @@ pipeline {
                 }
             }
         }
+
+        stage('Deploy to Kubernetes') {
+            steps {
+                withCredentials([file(credentialsId: 'kubeconfig', variable: 'KUBECONFIG')]) {
+                    sh '''
+                        kubectl get nodes
+                        kubectl -n devops-demo set image deployment/flask-demo flask-demo=ghcr.io/muneeb4110/${IMAGE_NAME}:jenkins-${BUILD_NUMBER}
+                        kubectl -n devops-demo rollout status deployment/flask-demo --timeout=300s
+                    '''
+                }
+            }
+        }
     }
 
     post {
